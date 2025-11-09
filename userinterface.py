@@ -52,11 +52,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --------------------------- LOAD MODEL & ENCODERS ---------------------------
-with open("best_salary_model.pkl", "wb") as f:
-    pickle.dump(model, f, protocol=4)  # protocol=4 works with older Python too
+# ✅ Load the model and encoders that were previously saved
+with open("best_salary_model.pkl", "rb") as f:
+    model = pickle.load(f)
 
-with open("encoders.pkl", "wb") as f:
-    pickle.dump(encoders, f, protocol=4)
+with open("encoders.pkl", "rb") as f:
+    encoders = pickle.load(f)
 
 # --------------------------- APP TITLE ---------------------------
 st.markdown("<div class='main'>", unsafe_allow_html=True)
@@ -71,13 +72,9 @@ st.sidebar.write("""
 Gain data-backed insights into earning potential.  
 This tool helps professionals and employers understand  
 income ranges based on key personal and work attributes.  
-
 """)
 
 # --------------------------- FORM INPUTS ---------------------------
-if "reset" not in st.session_state:
-    st.session_state.reset = False
-
 col1, col2 = st.columns(2)
 
 with col1:
@@ -97,47 +94,37 @@ with col2:
     race = st.selectbox("🏳️ Race", encoders['race'].classes_, key="race")
     relationship = st.selectbox("🤝 Relationship", encoders['relationship'].classes_, key="relation")
 
-# --------------------------- PREDICT & RESET ---------------------------
+# --------------------------- PREDICTION ---------------------------
 st.markdown("---")
-col_pred, col_reset = st.columns([1, 1])
+if st.button("🔮 Predict Salary Category"):
+    input_data = {
+        'age': age,
+        'workclass': encoders['workclass'].transform([workclass])[0],
+        'education': encoders['education'].transform([education])[0],
+        'educationno': education_no,
+        'maritalstatus': encoders['maritalstatus'].transform([maritalstatus])[0],
+        'occupation': encoders['occupation'].transform([occupation])[0],
+        'relationship': encoders['relationship'].transform([relationship])[0],
+        'race': encoders['race'].transform([race])[0],
+        'sex': encoders['sex'].transform([sex])[0],
+        'capitalgain': capital_gain,
+        'capitalloss': capital_loss,
+        'hoursperweek': hours_per_week,
+        'native': encoders['native'].transform([native])[0]
+    }
 
-with col_pred:
-    if st.button("🔮 Predict Salary Category"):
-        input_data = {
-            'age': age,
-            'workclass': encoders['workclass'].transform([workclass])[0],
-            'education': encoders['education'].transform([education])[0],
-            'educationno': education_no,
-            'maritalstatus': encoders['maritalstatus'].transform([maritalstatus])[0],
-            'occupation': encoders['occupation'].transform([occupation])[0],
-            'relationship': encoders['relationship'].transform([relationship])[0],
-            'race': encoders['race'].transform([race])[0],
-            'sex': encoders['sex'].transform([sex])[0],
-            'capitalgain': capital_gain,
-            'capitalloss': capital_loss,
-            'hoursperweek': hours_per_week,
-            'native': encoders['native'].transform([native])[0]
-        }
+    df = pd.DataFrame([input_data])
+    result = model.predict(df)
 
-        df = pd.DataFrame([input_data])
-        result = model.predict(df)
-
-        if result[0] == ">50K":
-            st.success("💰 **Predicted Salary Category: > 50K**")
-            st.balloons()
-            st.markdown("🎉 Excellent! This person belongs to a **high-income category.**")
-        else:
-            st.warning("📊 **Predicted Salary Category: ≤ 50K**")
-            st.markdown("🚀 This person currently earns **≤ 50K**, with potential for growth.")
-
-with col_reset:
-    if st.button("🔄 Reset Form"):
-      st.rerun()
-
+    if result[0] == ">50K":
+        st.success("💰 **Predicted Salary Category: > 50K**")
+        st.balloons()
+        st.markdown("🎉 Excellent! This person belongs to a **high-income category.**")
+    else:
+        st.warning("📊 **Predicted Salary Category: ≤ 50K**")
+        st.markdown("🚀 This person currently earns **≤ 50K**, with potential for growth.")
 
 # --------------------------- FOOTER ---------------------------
 st.markdown("---")
 st.caption("🧠 Developed with passion using Streamlit, Python & Machine Learning 💻")
 st.markdown("</div>", unsafe_allow_html=True)
-
-
