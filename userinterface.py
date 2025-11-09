@@ -56,7 +56,7 @@ with open("best_salary_model.pkl", "wb") as f:
     pickle.dump(model, f, protocol=4)  # protocol=4 works with older Python too
 
 with open("encoders.pkl", "wb") as f:
-    pickle.dump(encoders, f, protocol=4))
+    pickle.dump(encoders, f, protocol=4)
 
 # --------------------------- APP TITLE ---------------------------
 st.markdown("<div class='main'>", unsafe_allow_html=True)
@@ -139,4 +139,5 @@ with col_reset:
 st.markdown("---")
 st.caption("🧠 Developed with passion using Streamlit, Python & Machine Learning 💻")
 st.markdown("</div>", unsafe_allow_html=True)
+
 
